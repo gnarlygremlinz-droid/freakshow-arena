@@ -6,31 +6,61 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 const characters = [
-  {id:1, name:"Donald Trump", tag:"MAKE CHAT GREAT AGAIN", img:"https://picsum.photos/id/64/400/400", votes:12847},
-  {id:2, name:"Shrek", tag:"GET OUT OF MY SWAMP", img:"https://picsum.photos/id/201/400/400", votes:8942},
-  {id:3, name:"Yoda", tag:"HMM, CHAT YOU MUST", img:"https://picsum.photos/id/29/400/400", votes:6731},
-  {id:4, name:"Karen", tag:"I WANT TO SPEAK TO THE MANAGER", img:"https://picsum.photos/id/160/400/400", votes:5210},
-  {id:5, name:"Borat", tag:"VERY NICE!", img:"https://picsum.photos/id/201/400/400", votes:4123},
-  {id:6, name:"Vladimir Putin", tag:"IN RUSSIA CHAT CONTROLS YOU", img:"https://picsum.photos/id/160/400/400", votes:3890}
+  {id:1, name:"Donald Trump", tag:"MAKE CHAT GREAT AGAIN", img:"https://picsum.photos/id/64/400/400", votes:12847, voice:"TREMENDOUS! Believe me, this chat is going to be huge!"},
+  {id:2, name:"Shrek", tag:"GET OUT OF MY SWAMP", img:"https://picsum.photos/id/201/400/400", votes:8942, voice:"Get out of my swamp!"},
+  {id:3, name:"Yoda", tag:"HMM, CHAT YOU MUST", img:"https://picsum.photos/id/29/400/400", votes:6731, voice:"Hmm... strong with this question the force is."},
+  {id:4, name:"Karen", tag:"I WANT TO SPEAK TO THE MANAGER", img:"https://picsum.photos/id/160/400/400", votes:5210, voice:"I am THE MANAGER!"},
+  {id:5, name:"Borat", tag:"VERY NICE!", img:"https://picsum.photos/id/201/400/400", votes:4123, voice:"Very nice! High five!"},
+  {id:6, name:"Vladimir Putin", tag:"IN RUSSIA CHAT CONTROLS YOU", img:"https://picsum.photos/id/160/400/400", votes:3890, voice:"Very interesting..."}
 ];
 
 function render() {
-  document.getElementById("grid").innerHTML = characters.map(c => `<div onclick="alert('Clicked ' + c.name)" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer border-4 border-lime-400 hover:scale-105"><img src="\( {c.img}" class="w-full h-48 object-cover"><div class="p-4 text-center"><div class="font-black text-2xl text-orange-400"> \){c.name}</div><div class="text-lime-400 text-sm">\( {c.tag}</div><div class="text-4xl font-black"> \){c.votes}</div></div></div>`).join('');
+  var html = "";
+  for (var i = 0; i < characters.length; i++) {
+    var c = characters[i];
+    html += "<div onclick=\"openModal(" + c.id + ")\" onmouseover=\"speak('" + c.voice + "')\" class=\"bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer border-4 border-lime-400 hover:scale-105\">";
+    html += "<img src=\"" + c.img + "\" class=\"w-full h-48 object-cover\">";
+    html += "<div class=\"p-4 text-center\">";
+    html += "<div class=\"font-black text-2xl text-orange-400\">" + c.name + "</div>";
+    html += "<div class=\"text-lime-400 text-sm\">" + c.tag + "</div>";
+    html += "<div class=\"text-4xl font-black\">" + c.votes + "</div>";
+    html += "</div></div>";
+  }
+  document.getElementById("grid").innerHTML = html;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  alert("✅ JS WORKS — Tap any card");
+function speak(text) {
+  var utterance = new SpeechSynthesisUtterance(text);
+  if (text.includes("TREMENDOUS")) { utterance.rate = 0.9; utterance.pitch = 1.1; }
+  speechSynthesis.speak(utterance);
+}
+
+function openModal(id) {
+  var c = characters.find(x => x.id === id);
+  document.getElementById("modal-name").textContent = c.name;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  alert("✅ JS WORKS — Long-press card name for voice, tap for chat");
   render();
 });
 </script>
 <style>
 body { background:#000; color:lime; }
 h1 { font-size:50px; color:orange; text-shadow:0 0 20px orange; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; }
 </style>
 </head>
 <body class="p-8 text-center">
 <h1>FREAKSHOW ARENA</h1>
 <p class="text-3xl mt-4">Coins: <span class="text-yellow-400">150</span></p>
 <div id="grid" class="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-10"></div>
-</body>
-</html>
+
+<div id="modal" class="modal">
+  <div class="bg-zinc-900 p-8 rounded-3xl max-w-md text-left">
+    <h2 id="modal-name" class="text-3
