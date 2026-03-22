@@ -15,20 +15,30 @@ const PAYPAL_LINK = 'https://paypal.me/ALPHAPROJECTZ';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let user = null, coins = 150, characters = [], currentChar = null, cycleEndTime = null;
+let user = null;
+let coins = 150;
+let characters = [];
+let currentChar = null;
+let cycleEndTime = null;
 
 async function init() {
   const { data: { user: u } } = await supabase.auth.getUser();
   user = u || (await supabase.auth.signInAnonymously()).data.user;
+
   await supabase.rpc('check_and_purge');
+
   const { data: p } = await supabase.from('profiles').select('coins').eq('id', user.id).single();
   if (p) coins = p.coins;
+
   const { data: sett } = await supabase.from('settings').select('value').eq('key','cycle_end_time').single();
   cycleEndTime = new Date(sett.value);
+
   const { data: c } = await supabase.from('characters').select('*').order('votes', { ascending: false });
   characters = c;
+
   render();
   startTimer();
+  showLaunchOffer();
 }
 
 function getCurrentDay() {
@@ -54,8 +64,10 @@ function render() {
   document.getElementById('coins').textContent = coins;
   const champion = characters[0] ? characters[0].name : 'TRUMP';
   document.getElementById('champion-name').textContent = `CYCLE WINNER 🏆 ${champion}`;
+
   document.getElementById('grid').innerHTML = characters.map(c => `
-    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
+    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" 
+         class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
       <img src="${c.img}" class="w-full h-48 object-cover">
       <div class="p-4 text-center">
         <div class="font-black text-2xl text-orange-400">${c.name}</div>
@@ -84,17 +96,23 @@ async function openModal(id) {
 function sendChat() {
   const text = document.getElementById('chat-input').value.trim();
   if (!text) return;
-  const msg = document.createElement('div'); msg.className = 'flex justify-end';
+
+  const msg = document.createElement('div');
+  msg.className = 'flex justify-end';
   msg.innerHTML = `<div class="bg-blue-600 px-5 py-3 rounded-3xl">${text}</div>`;
   document.getElementById('messages').appendChild(msg);
+
   setTimeout(() => {
-    const reply = currentChar.name.includes('Trump') ? "TREMENDOUS! Believe me!" : currentChar.name.includes('Shrek') ? "Get out of my swamp!" : "Interesting...";
-    const ai = document.createElement('div'); ai.className = 'flex justify-start';
+    const reply = currentChar.name.includes('Trump') ? "TREMENDOUS! Believe me!" : 
+                  currentChar.name.includes('Shrek') ? "Get out of my swamp!" : "Interesting...";
+    const ai = document.createElement('div');
+    ai.className = 'flex justify-start';
     ai.innerHTML = `<div class="bg-orange-500 px-5 py-3 rounded-3xl">${reply}</div>`;
     document.getElementById('messages').appendChild(ai);
     playHoverVoice({tooltip: reply, name: currentChar.name});
     document.getElementById('messages').scrollTop = 999999;
   }, 600);
+
   document.getElementById('chat-input').value = '';
 }
 
@@ -104,9 +122,13 @@ function showLaunchOffer() {
   localStorage.setItem('launchOfferSeen', 'true');
 }
 
-function buyCoins() { window.open(PAYPAL_LINK, '_blank'); }
+function buyCoins() { 
+  window.open(PAYPAL_LINK, '_blank'); 
+}
 
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function closeModal() { 
+  document.getElementById('modal').classList.add('hidden'); 
+}
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
@@ -127,7 +149,7 @@ body { font-family: 'Press Start 2P', system-ui; background: #000; }
 </nav>
 
 <header class="relative h-[420px] bg-gradient-to-b from-purple-950 to-black flex items-center justify-center overflow-hidden border-b-8 border-orange-500">
-  <!-- REPLACE THIS WITH YOUR IMGUR LINK -->
+  <!-- REPLACE THIS WITH YOUR IMGUR LINK OF THE OBESE TRUMP IMAGE -->
   <img src="https://i.imgur.com/YOUR-TRUMP-IMAGE.png" class="w-96 border-8 border-orange-500 rounded-3xl glitch shadow-2xl" alt="FREAKSHOW CHAMPION">
   <div class="text-center z-10">
     <div class="text-6xl font-black neon text-orange-400 tracking-widest glitch">FREAKSHOW ARENA</div>
