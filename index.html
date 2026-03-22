@@ -14,7 +14,7 @@ constraint characters = ]
   {id:6, name:"Vladimir Putin", tag:"IN RUSSIA CHAT CONTROLS YOU", img:"https://picsum.photos/id/160/400/400", votes:3890}
 ];
 
-  mfunction render() {
+  ffunction render() {
   document.getElementById("grid").innerHTML = characters.map(c => `
     <div onclick="alert('Clicked ' + c.name)" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer border-4 border-lime-400">
       <img src="${c.img}" class="w-full h-48 object-cover">
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <style>
-@import import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 body { font-family: 'Press Start 2P', system-ui; background: #000; color: lime; }
 </style>
 </head>
