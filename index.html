@@ -29,7 +29,6 @@ async function init() {
   characters = c;
   render();
   startTimer();
-  showLaunchOffer();
 }
 
 function getCurrentDay() {
@@ -56,8 +55,7 @@ function render() {
   const champion = characters[0] ? characters[0].name : 'TRUMP';
   document.getElementById('champion-name').textContent = `CYCLE WINNER 🏆 ${champion}`;
   document.getElementById('grid').innerHTML = characters.map(c => `
-    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" 
-         class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
+    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
       <img src="${c.img}" class="w-full h-48 object-cover">
       <div class="p-4 text-center">
         <div class="font-black text-2xl text-orange-400">${c.name}</div>
@@ -129,7 +127,7 @@ body { font-family: 'Press Start 2P', system-ui; background: #000; }
 </nav>
 
 <header class="relative h-[420px] bg-gradient-to-b from-purple-950 to-black flex items-center justify-center overflow-hidden border-b-8 border-orange-500">
-  <!-- REPLACE THIS LINK WITH YOUR IMGUR LINK -->
+  <!-- REPLACE THIS WITH YOUR IMGUR LINK -->
   <img src="https://i.imgur.com/YOUR-TRUMP-IMAGE.png" class="w-96 border-8 border-orange-500 rounded-3xl glitch shadow-2xl" alt="FREAKSHOW CHAMPION">
   <div class="text-center z-10">
     <div class="text-6xl font-black neon text-orange-400 tracking-widest glitch">FREAKSHOW ARENA</div>
