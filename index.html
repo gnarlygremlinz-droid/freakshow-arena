@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FREAKSHOW ARENA — 3 Day Meme War</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<script src="https://sdk.applixir.com/applixir-sdk.js"></script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://dqbyxilgywvakdvykxhm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxYnl4aWxneXd2YWtkdnlreGhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODgyMjQsImV4cCI6MjA4OTc2NDIyNH0.41qb21_ixmgnZTw92cJWR4j74S5l_VB9zgT9XLFJOMk';
+const PAYPAL_LINK = 'https://paypal.me/ALPHAPROJECTZ';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let user = null, coins = 150, characters = [], currentChar = null, cycleEndTime = null;
+
+async function init() {
+  const { data: { user: u } } = await supabase.auth.getUser();
+  user = u || (await supabase.auth.signInAnonymously()).data.user;
+  await supabase.rpc('check_and_purge');
+  const { data: p } = await supabase.from('profiles').select('coins').eq('id', user.id).single();
+  if (p) coins = p.coins;
+  const { data: sett } = await supabase.from('settings').select('value').eq('key','cycle_end_time').single();
+  cycleEndTime = new Date(sett.value);
+  const { data: c } = await supabase.from('characters').select('*').order('votes', { ascending: false });
+  characters = c;
+  render();
+  startTimer();
+  showLaunchOffer();
+}
+
+function getCurrentDay() {
+  const totalMs = cycleEndTime - Date.now();
+  const daysLeft = Math.ceil(totalMs / (24*60*60*1000));
+  return 4 - daysLeft;
+}
+
+function startTimer() {
+  setInterval(() => {
+    const remaining = Math.max(0, Math.floor((cycleEndTime - Date.now()) / 1000));
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    const s = remaining % 60;
+    const day = getCurrentDay();
+    const dayText = day === 3 ? 'FINAL DAY' : `DAY ${day} OF 3`;
+    document.getElementById('timer').innerHTML = `${dayText} • \( {h.toString().padStart(2,'0')}: \){m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    if (remaining <= 0) init();
+  }, 1000);
+}
+
+function render() {
+  document.getElementById('coins').textContent = coins;
+  const champion = characters[0] ? characters[0].name : 'TRUMP';
+  document.getElementById('champion-name').textContent = `CYCLE WINNER 🏆 ${champion}`;
+  document.getElementById('grid').innerHTML = characters.map(c => `
+    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" 
+         class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
+      <img src="${c.img}" class="w-full h-48 object-cover">
+      <div class="p-4 text-center">
+        <div class="font-black text-2xl text-orange-400">${c.name}</div>
+        <div class="text-lime-400 text-sm">${c.tag}</div>
+        <div class="text-4xl font-black">${c.votes}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function playHoverVoice(char) {
+  const utterance = new SpeechSynthesisUtterance(char.tooltip || "Chaos awaits...");
+  utterance.rate = char.name.includes("Trump") ? 0.9 : 1;
+  utterance.pitch = char.name.includes("Trump") ? 1.1 : 1;
+  speechSynthesis.speak(utterance);
+}
+
+async function openModal(id) {
+  currentChar = characters.find(c => c.id === id);
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal-name').textContent = currentChar.name;
+  document.getElementById('modal-tag').textContent = currentChar.tag;
+  document.getElementById('messages').innerHTML = '<div class="text-center text-gray-400">Type or speak to me!</div>';
+}
+
+function sendChat() {
+  const text = document.getElementById('chat-input').value.trim();
+  if (!text) return;
+  const msg = document.createElement('div'); msg.className = 'flex justify-end';
+  msg.innerHTML = `<div class="bg-blue-600 px-5 py-3 rounded-3xl">${text}</div>`;
+  document.getElementById('messages').appendChild(msg);
+  setTimeout(() => {
+    const reply = currentChar.name.includes('Trump') ? "TREMENDOUS! Believe me!" : currentChar.name.includes('Shrek') ? "Get out of my swamp!" : "Interesting...";
+    const ai = document.createElement('div'); ai.className = 'flex justify-start';
+    ai.innerHTML = `<div class="bg-orange-500 px-5 py-3 rounded-3xl">${reply}</div>`;
+    document.getElementById('messages').appendChild(ai);
+    playHoverVoice({tooltip: reply, name: currentChar.name});
+    document.getElementById('messages').scrollTop = 999999;
+  }, 600);
+  document.getElementById('chat-input').value = '';
+}
+
+function showLaunchOffer() {
+  if (localStorage.getItem('launchOfferSeen')) return;
+  alert("🚀 LAUNCH SPECIAL!\n\n300 Chaos Coins + 1 FREE submission credit for only $1.99\n\nClose this to never see it again");
+  localStorage.setItem('launchOfferSeen', 'true');
+}
+
+function buyCoins() { window.open(PAYPAL_LINK, '_blank'); }
+
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+body { font-family: 'Press Start 2P', system-ui; background: #000; }
+.glitch { animation: glitch 0.4s infinite; }
+@keyframes glitch { 0%,100%{transform:translate(0)} 20%{transform:translate(-3px,3px)} 40%{transform:translate(3px,-3px)} }
+.neon { text-shadow: 0 0 15px #22ff88, 0 0 30px #22ff88; }
+</style>
+</head>
+<body class="bg-black text-lime-400 min-h-screen overflow-hidden relative">
+
+<nav class="sticky top-0 bg-zinc-950 border-b-4 border-lime-500 p-4 flex justify-between items-center z-50">
+  <div class="text-4xl font-black neon tracking-widest">FREAKSHOW ARENA</div>
+  <div id="timer" class="font-mono text-xl text-orange-400"></div>
+  <div class="flex items-center gap-3 text-xl">🪙 <span id="coins" class="font-bold">150</span></div>
+</nav>
+
+<header class="relative h-[420px] bg-gradient-to-b from-purple-950 to-black flex items-center justify-center overflow-hidden border-b-8 border-orange-500">
+  <!-- REPLACE THIS LINK WITH YOUR IMGUR LINK -->
+  <img src="https://i.imgur.com/YOUR-TRUMP-IMAGE.png" class="w-96 border-8 border-orange-500 rounded-3xl glitch shadow-2xl" alt="FREAKSHOW CHAMPION">
+  <div class="text-center z-10">
+    <div class="text-6xl font-black neon text-orange-400 tracking-widest glitch">FREAKSHOW ARENA</div>
+    <div id="champion-name" class="text-5xl font-black neon text-lime-400 mt-4"></div>
+    <button onclick="buyCoins()" class="mt-6 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-2xl px-14 py-5 rounded-3xl">BUY CHAOS COINS</button>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto p-8">
+  <h2 class="text-4xl font-black mb-8 text-center neon">THE CHALLENGERS — 3 DAY WAR</h2>
+  <div id="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[999]">
+  <div class="bg-zinc-900 w-full max-w-xl rounded-3xl overflow-hidden">
+    <div class="p-5 border-b flex items-center gap-4 bg-zinc-950">
+      <div>
+        <div id="modal-name" class="text-3xl font-black"></div>
+        <div id="modal-tag" class="text-lime-400"></div>
+      </div>
+      <button onclick="closeModal()" class="ml-auto text-5xl">×</button>
+    </div>
+    <div id="messages" class="h-80 p-6 overflow-y-auto space-y-4 bg-black"></div>
+    <div class="p-4 border-t bg-zinc-950 flex gap-3">
+      <input id="chat-input" placeholder="Type or speak..." class="flex-1 bg-zinc-800 px-6 py-4 rounded-3xl text-white">
+      <button onclick="sendChat()" class="bg-lime-400 text-black px-10 rounded-3xl font-bold">SEND</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
