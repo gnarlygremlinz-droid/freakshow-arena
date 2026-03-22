@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <title>FREAKSHOW ARENA — 3 Day Meme War</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
-<script src="https://sdk.applixir.com/applixir-sdk.js"></script>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -22,18 +20,22 @@ let currentChar = null;
 let cycleEndTime = null;
 
 async function init() {
-  const { data: { user: u } } = await supabase.auth.getUser();
-  user = u || (await supabase.auth.signInAnonymously()).data.user;
-  await supabase.rpc('check_and_purge');
-  const { data: p } = await supabase.from('profiles').select('coins').eq('id', user.id).single();
-  if (p) coins = p.coins;
-  const { data: sett } = await supabase.from('settings').select('value').eq('key','cycle_end_time').single();
-  cycleEndTime = new Date(sett.value);
-  const { data: c } = await supabase.from('characters').select('*').order('votes', { ascending: false });
-  characters = c;
-  render();
-  startTimer();
-  showLaunchOffer();
+  try {
+    const { data: { user: u } } = await supabase.auth.getUser();
+    user = u || (await supabase.auth.signInAnonymously()).data.user;
+    await supabase.rpc('check_and_purge');
+    const { data: p } = await supabase.from('profiles').select('coins').eq('id', user.id).single();
+    if (p) coins = p.coins;
+    const { data: sett } = await supabase.from('settings').select('value').eq('key','cycle_end_time').single();
+    cycleEndTime = new Date(sett.value);
+    const { data: c } = await supabase.from('characters').select('*').order('votes', { ascending: false });
+    characters = c || [];
+    render();
+    startTimer();
+  } catch (e) {
+    console.error(e);
+    alert("Error loading data: " + e.message + "\nGrid may be empty.");
+  }
 }
 
 function getCurrentDay() {
@@ -60,7 +62,7 @@ function render() {
   const champion = characters[0] ? characters[0].name : 'TRUMP';
   document.getElementById('champion-name').textContent = `CYCLE WINNER 🏆 ${champion}`;
   document.getElementById('grid').innerHTML = characters.map(c => `
-    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice( \){JSON.stringify(c)})" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
+    <div onclick="openModal(\( {c.id})" onmouseover="playHoverVoice(' \){c.tooltip || 'Chaos awaits...'}')" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer hover:scale-105 transition border-4 border-lime-400 relative group">
       <img src="${c.img}" class="w-full h-48 object-cover">
       <div class="p-4 text-center">
         <div class="font-black text-2xl text-orange-400">${c.name}</div>
@@ -71,18 +73,18 @@ function render() {
   `).join('');
 }
 
-function playHoverVoice(char) {
-  const utterance = new SpeechSynthesisUtterance(char.tooltip || "Chaos awaits...");
-  utterance.rate = char.name.includes("Trump") ? 0.9 : 1;
-  utterance.pitch = char.name.includes("Trump") ? 1.1 : 1;
+function playHoverVoice(tooltip) {
+  const utterance = new SpeechSynthesisUtterance(tooltip);
+  utterance.rate = 0.9;
+  utterance.pitch = 1.1;
   speechSynthesis.speak(utterance);
 }
 
-async function openModal(id) {
-  currentChar = characters.find(c => c.id === id);
+function openModal(id) {
+  const char = characters.find(c => c.id === id);
   document.getElementById('modal').classList.remove('hidden');
-  document.getElementById('modal-name').textContent = currentChar.name;
-  document.getElementById('modal-tag').textContent = currentChar.tag;
+  document.getElementById('modal-name').textContent = char.name;
+  document.getElementById('modal-tag').textContent = char.tag;
   document.getElementById('messages').innerHTML = '<div class="text-center text-gray-400">Type or speak to me!</div>';
 }
 
@@ -97,21 +99,19 @@ function sendChat() {
     const ai = document.createElement('div'); ai.className = 'flex justify-start';
     ai.innerHTML = `<div class="bg-orange-500 px-5 py-3 rounded-3xl">${reply}</div>`;
     document.getElementById('messages').appendChild(ai);
-    playHoverVoice({tooltip: reply, name: currentChar.name});
+    playHoverVoice(reply);
     document.getElementById('messages').scrollTop = 999999;
   }, 600);
   document.getElementById('chat-input').value = '';
 }
 
-function showLaunchOffer() {
-  if (localStorage.getItem('launchOfferSeen')) return;
-  alert("🚀 LAUNCH SPECIAL!\n\n300 Chaos Coins + 1 FREE submission credit for only $1.99\n\nClose this to never see it again");
-  localStorage.setItem('launchOfferSeen', 'true');
+function buyCoins() {
+  window.open(PAYPAL_LINK, '_blank');
 }
 
-function buyCoins() { window.open(PAYPAL_LINK, '_blank'); }
-
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
@@ -132,7 +132,7 @@ body { font-family: 'Press Start 2P', system-ui; background: #000; }
 </nav>
 
 <header class="relative h-[420px] bg-gradient-to-b from-purple-950 to-black flex items-center justify-center overflow-hidden border-b-8 border-orange-500">
-  <img src="https://i.imgur.com/YOUR-TRUMP-IMAGE.png" class="w-96 border-8 border-orange-500 rounded-3xl glitch shadow-2xl" alt="FREAKSHOW CHAMPION">
+  <img src="https://picsum.photos/id/64/600/400" class="w-96 border-8 border-orange-500 rounded-3xl glitch shadow-2xl" alt="FREAKSHOW CHAMPION">
   <div class="text-center z-10">
     <div class="text-6xl font-black neon text-orange-400 tracking-widest glitch">FREAKSHOW ARENA</div>
     <div id="champion-name" class="text-5xl font-black neon text-lime-400 mt-4"></div>
@@ -140,18 +140,9 @@ body { font-family: 'Press Start 2P', system-ui; background: #000; }
   </div>
 </header>
 
-<!-- Google AdSense banner -->
-<ins class="adsbygoogle my-4 mx-auto block" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_ID" data-ad-format="auto"></ins>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-
 <div class="max-w-7xl mx-auto p-8">
   <h2 class="text-4xl font-black mb-8 text-center neon">THE CHALLENGERS — 3 DAY WAR</h2>
   <div id="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
-</div>
-
-<!-- Rewarded ad button -->
-<div onclick="watchAd()" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black text-3xl px-16 py-7 rounded-3xl shadow-2xl cursor-pointer hover:scale-110 flex items-center gap-4">
-  📺 WATCH 60-90s AD <span class="text-4xl">+10 CHAOS COINS</span>
 </div>
 
 <div id="modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[999]">
@@ -172,4 +163,4 @@ body { font-family: 'Press Start 2P', system-ui; background: #000; }
 </div>
 
 </body>
-      </html>
+</html>
