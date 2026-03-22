@@ -1,48 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>FREAKSHOW ARENA</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-const characters = [ /* 30 characters here - same as before but with voice */ 
-  {id:1, name:"Donald Trump", tag:"MAKE CHAT GREAT AGAIN", img:"https://picsum.photos/id/64/400/400", votes:12847, voice:"TREMENDOUS! Believe me!"},
-  // ... (all 30 from previous - I kept them exact)
-];
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freakshow Arena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060606;
+      --panel: #111111;
+      --line: #2a2a2a;
+      --neon: #84cc16;
+      --orange: #fb923c;
+    }
 
-function render() { /* same safe loop as last */ }
-function speak(text) { /* Trump pitch */ }
-function openModal(id) { /* chat modal */ }
+    body {
+      background: radial-gradient(circle at top, #151515 0%, #080808 45%, #030303 100%);
+      color: #e5e7eb;
+      font-family: "Press Start 2P", monospace;
+      min-height: 100vh;
+    }
 
-document.addEventListener("DOMContentLoaded", () => {
-  render();
-});
-</script>
-<style>
-body { background:#000; color:lime; font-family:'Press Start 2P', monospace; }
-.glitch { animation: glitch 0.4s infinite; }
-@keyframes glitch { 0%,100%{transform:translate(0)} 20%{transform:translate(-3px,3px)} 40%{transform:translate(3px,-3px)} }
-.header { background: linear-gradient(#ff8800, #ff2200); text-shadow: 0 0 30px #ffff00; }
-</style>
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.08) 0px,
+        rgba(255,255,255,0.08) 1px,
+        transparent 2px,
+        transparent 4px
+      );
+      z-index: 50;
+    }
+
+    .glitch {
+      position: relative;
+      animation: glitch 1.5s infinite;
+    }
+
+    @keyframes glitch {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-1px, 1px); }
+      40% { transform: translate(1px, -1px); }
+      60% { transform: translate(-1px, 0); }
+      80% { transform: translate(1px, 1px); }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
+      border: 2px solid var(--line);
+      box-shadow: 0 0 0 1px #000 inset, 0 0 24px rgba(0,0,0,0.5);
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #111827;
+      font-weight: 800;
+      border: 2px solid rgba(255,255,255,0.25);
+      text-shadow: none;
+      flex-shrink: 0;
+    }
+
+    .toast {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .toast.hidden {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .modal-backdrop {
+      background: rgba(0,0,0,0.75);
+    }
+  </style>
 </head>
-<body class="p-8 text-center">
-<div class="glitch header text-white text-6xl font-black py-8 mb-6 rounded-3xl border-8 border-yellow-400 shadow-2xl">
-  ORANGE DONNY<br>MAKE CHAT GREAT AGAIN
-</div>
-<h1 class="glitch text-5xl text-orange-400">FREAKSHOW ARENA</h1>
-<p class="text-3xl">Coins: <span class="text-yellow-400">150</span></p>
-<p class="text-2xl text-red-400 mt-2">DAY 1 OF 3 • 23h 59m left</p>
-<div id="grid" class="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-10"></div>
+<body>
+  <div class="scanlines"></div>
 
-<div class="mt-8 bg-red-600 p-6 rounded-3xl border-4 border-yellow-400">
-  <p class="text-white text-xl">WATCH 60-90s AD +10 CHAOS COINS</p>
-  <button onclick="alert('Ad playing... +10 coins added!')" class="mt-4 bg-yellow-400 text-black px-8 py-3 rounded-xl font-bold">WATCH AD</button>
-</div>
+  <main class="relative z-10 max-w-6xl mx-auto p-4 sm:p-6">
+    <header class="panel rounded-2xl p-4 sm:p-6 text-center mb-5">
+      <h1 class="glitch text-orange-400 text-xl sm:text-2xl md:text-3xl leading-relaxed">
+        ORANGE DONNY
+      </h1>
+      <p class="text-yellow-300 text-xs sm:text-sm mt-3">MAKE CHAT GREAT AGAIN</p>
+      <h2 class="glitch text-lime-400 text-base sm:text-xl mt-5">FREAKSHOW ARENA</h2>
+    </header>
 
-<div class="mt-6 bg-green-600 p-6 rounded-3xl border-4 border-lime-400">
-  <button onclick="window.open('https://paypal.me/ALPHAPROJECTZ','_blank')" class="bg-white text-black px-8 py-3 rounded-xl font-bold text-xl">BUY CHAOS COINS</button>
-</div>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+      <div class="panel rounded-xl p-4">
+        <p class="text-xs text-gray-400">CHAOS COINS</p>
+        <p id="coinsText" class="text-yellow-300 text-lg mt-2">150</p>
+      </div>
+      <div class="panel rounded-xl p-4">
+        <p class="text-xs text-gray-400">EVENT</p>
+        <p id="dayText" class="text-orange-300 text-sm mt-2">Day 1 of 3</p>
+      </div>
+      <div class="panel rounded-xl p-4">
+        <p class="text-xs text-gray-400">TIME LEFT</p>
+        <p id="timeText" class="text-red-300 text-sm mt-2">23h 59m</p>
+      </div>
+    </section>
 
-<div id="modal" class="modal"> /* chat modal same as before */ </div>
+    <section class="panel rounded-2xl p-4 sm:p-5 mb-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h3 class="text-lime-300 text-sm sm:text-base">Contenders</h3>
+        <p class="text-xs text-gray-400">Vote cost: <span class="text-yellow-300">5 coins</span></p>
+      </div>
+      <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="panel rounded-2xl p-4">
+        <p class="text-sm text-red-300">WATCH 60–90s AD</p>
+        <p class="text-xs text-gray-400 mt-2">Reward: +10 Chaos Coins</p>
+        <button
+          id="watchAdBtn"
+          class="mt-4 w-full bg-yellow-300 text-black font-bold py-3 rounded-lg hover:bg-yellow-200 transition"
+        >
+          WATCH AD
+        </button>
+        <div class="mt-3 h-2 bg-gray-800 rounded overflow-hidden">
+          <div id="adBar" class="h-full w-0 bg-lime-400 transition-all duration-1000"></div>
+        </div>
+      </div>
+
+      <div class="panel rounded-2xl p-4">
+        <p class="text-sm text-green-300">NEED MORE COINS?</p>
+        <p class="text-xs text-gray-400 mt-2">Opens external checkout</p>
+        <a
+          href="https://paypal.me/ALPHAPROJECTZ"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-4 inline-flex items-center justify-center w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-100 transition"
+        >
+          BUY CHAOS COINS
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 hidden items-center justify-center p-4 z-40">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="relative panel rounded-2xl w-full max-w-lg p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 id="modalName" class="text-orange-300 text-sm sm:text-base"></h3>
+          <p id="modalTag" class="text-xs text-gray-400 mt-2"></p>
+        </div>
+        <button id="closeModalBtn" class="text-gray-300 hover:text-white text-xs">CLOSE</button>
+      </div>
+
+      <div class="mt-4 panel rounded-xl p-4">
+        <p class="text-xs text-gray-400 mb-2">Voice line</p>
+        <p id="modalVoice" class="text-sm leading-relaxed text-lime-300"></p>
+      </div>
+
+      <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <button id="speakBtn" class="bg-orange-400 text-black font-bold py-2 px-4 rounded-lg hover:bg-orange-300 transition">
+          SPEAK
+        </button>
+        <button id="voteFromModalBtn" class="bg-lime-400 text-black font-bold py-2 px-4 rounded-lg hover:bg-lime-300 transition">
+          VOTE (+1 / -5 coins)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 panel rounded-xl px-4 py-3 text-xs text-white"></div>
+
+  <script>
+    const state = {
+      coins: 150,
+      day: 1,
+      totalDays: 3,
+      minutesLeft: 23 * 60 + 59,
+      adBusy: false,
+      selectedId: null
+    };
+
+    const colors = [
+      "bg-yellow-300", "bg-orange-300", "bg-lime-300", "bg-cyan-300",
+      "bg-pink-300", "bg-emerald-300", "bg-purple-300", "bg-sky-300"
+    ];
+
+    const characters = [
+      { id: 1, name: "Donald Trump", tag: "MAKE CHAT GREAT AGAIN", votes: 12847, voice: "TREMENDOUS. Believe me. Nobody chats better than this." },
+      { id: 2, name: "Captain Capslock", tag: "LOUD IS A STRATEGY", votes: 8421, voice: "WHY TYPE QUIETLY WHEN WE CAN TYPE HISTORY?" },
+      { id: 3, name: "Lady Lag", tag: "BUFFERING DESTINY", votes: 6990, voice: "Give me a second... and another... almost there..." },
+      { id: 4, name: "Meme Wizard", tag: "SPELLS IN PNG", votes: 7344, voice: "I cast GIF of confusion. It is highly effective." },
+      { id: 5, name: "Sir Clickbait", tag: "YOU WON'T BELIEVE #7", votes: 9802, voice: "This one weird trick defeated all reason." },
+      { id: 6, name: "Bug Baron", tag: "FEATURE OR FAILURE?", votes: 6115, voice: "If it crashes consistently, it is reliable." },
+      { id: 7, name: "Neon Ninja", tag: "SILENT BUT BRIGHT", votes: 4052, voice: "Move fast. Leave only glowing footprints." },
+      { id: 8, name: "Glitch Queen", tag: "CHAOS, BUT ELEGANT", votes: 8760, voice: "Perfection is boring. Distortion is art." },
+      { id: 9, name: "Patch Prophet", tag: "TOMORROW'S FIX TODAY", votes: 5521, voice: "I have seen the next update. It still has one typo." },
+      { id: 10, name: "Drama Bot", tag: "ALL CAPS EMOTIONS", votes: 11110, voice: "This is the most shocking patch note of the century." },
+      { id: 11, name: "404 Phantom", tag: "NOT FOUND, STILL HERE", votes: 4988, voice: "You cannot load what refuses to exist." },
+      { id: 12, name: "Syntax Sage", tag: "SEMICOLON SHERIFF", votes: 6210, voice: "Wisdom begins where missing braces end." },
+      { id: 13, name: "Turbo Troll", tag: "FAST REPLIES, WILD TAKES", votes: 7199, voice: "I post at speed. Accuracy is optional." },
+      { id: 14, name: "Byte Brawler", tag: "1v1 IN BINARY", votes: 4321, voice: "Meet me in the arena. Bring your best bits." },
+      { id: 15, name: "Console Cowboy", tag: "RUN IT LIVE", votes: 3555, voice: "No fear, only deploy." },
+      { id: 16, name: "Retro Rogue", tag: "8-BIT ATTITUDE", votes: 6901, voice: "If it beeps, it ships." },
+      { id: 17, name: "Cache Ghost", tag: "OLD DATA NEVER DIES", votes: 3014, voice: "You cleared it... but I remain." },
+      { id: 18, name: "Captain Hotfix", tag: "PATCH NOW, SLEEP NEVER", votes: 5822, voice: "Production is calm. Too calm." },
+      { id: 19, name: "Pixel Pirate", tag: "STEALING FRAMES", votes: 4490, voice: "Arrr, these sprites belong to me now." },
+      { id: 20, name: "Kernel Knight", tag: "LOW LEVEL LEGEND", votes: 5377, voice: "In the deep stack, honor matters." },
+      { id: 21, name: "Ms. Proxy", tag: "I SPEAK FOR OTHERS", votes: 2634, voice: "Request accepted. Identity redacted." },
+      { id: 22, name: "Regex Rex", tag: "MATCHES EVERYTHING", votes: 7788, voice: "I can parse your destiny with one expression." },
+      { id: 23, name: "UI Yeti", tag: "MARGINS OF MAYHEM", votes: 3120, voice: "It looked centered on my machine." },
+      { id: 24, name: "Night Deploy", tag: "MIDNIGHT MADNESS", votes: 8450, voice: "We launch at moonrise. Pray for logs." },
+      { id: 25, name: "Bug Whisperer", tag: "IT ONLY BREAKS FOR ME", votes: 4205, voice: "Shh... the bug is scared. Move slowly." },
+      { id: 26, name: "Cloud Raider", tag: "SKY-HIGH LATENCY", votes: 4699, voice: "We ride the storm and autoscale." },
+      { id: 27, name: "Delta Diva", tag: "CHANGE IS FASHION", votes: 5888, voice: "Version control is couture." },
+      { id: 28, name: "Captain Rollback", tag: "RETREAT TO VICTORY", votes: 3911, voice: "Forward failed. Backward triumphs." },
+      { id: 29, name: "Fuzz Fighter", tag: "TEST THE CHAOS", votes: 3467, voice: "Random input. Predictable destruction." },
+      { id: 30, name: "Packet Punk", tag: "PING WITH ATTITUDE", votes: 5012, voice: "Low ping, high chaos." }
+    ];
+
+    const gridEl = document.getElementById("grid");
+    const coinsTextEl = document.getElementById("coinsText");
+    const dayTextEl = document.getElementById("dayText");
+    const timeTextEl = document.getElementById("timeText");
+    const watchAdBtn = document.getElementById("watchAdBtn");
+    const adBar = document.getElementById("adBar");
+
+    const modal = document.getElementById("modal");
+    const modalName = document.getElementById("modalName");
+    const modalTag = document.getElementById("modalTag");
+    const modalVoice = document.getElementById("modalVoice");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const speakBtn = document.getElementById("speakBtn");
+    const voteFromModalBtn = document.getElementById("voteFromModalBtn");
+
+    const toastEl = document.getElementById("toast");
+
+    function initials(name) {
+      return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0].toUpperCase())
+        .join("");
+    }
+
+    function colorFor(id) {
+      return colors[id % colors.length];
+    }
+
+    function formatTime(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${h}h ${m.toString().padStart(2, "0")}m`;
+    }
+
+    function showToast(message) {
+      toastEl.textContent = message;
+      toastEl.classList.remove("hidden");
+      toastEl.classList.add("show");
+      setTimeout(() => {
+        toastEl.classList.remove("show");
+        toastEl.classList.add("hidden");
+      }, 2200);
+    }
+
+    function render() {
+      coinsTextEl.textContent = state.coins;
+      dayTextEl.textContent = `Day ${state.day} of ${state.totalDays}`;
+      timeTextEl.textContent = formatTime(state.minutesLeft);
+
+      const sorted = [...characters].sort((a, b) => b.votes - a.votes);
+
+      gridEl.innerHTML = sorted.map((c) => `
+        <article class="panel rounded-xl p-3">
+          <div class="flex items-start gap-3">
+            <div class="avatar ${colorFor(c.id)}">${initials(c.name)}</div>
+            <div class="min-w-0">
+              <h4 class="text-xs sm:text-sm text-orange-300 truncate">${c.name}</h4>
+              <p class="text-[10px] text-gray-400 mt-2 leading-relaxed">${c.tag}</p>
+              <p class="text-xs text-lime-300 mt-3">Votes: ${c.votes.toLocaleString()}</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button data-action="chat" data-id="${c.id}" class="bg-cyan-400 text-black font-bold text-xs py-2 rounded hover:bg-cyan-300 transition">CHAT</button>
+            <button data-action="vote" data-id="${c.id}" class="bg-yellow-300 text-black font-bold text-xs py-2 rounded hover:bg-yellow-200 transition">VOTE</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function vote(id) {
+      const cost = 5;
+      if (state.coins < cost) {
+        showToast("Not enough coins. Watch an ad for +10.");
+        return;
+      }
+
+      const idx = characters.findIndex(c => c.id === id);
+      if (idx === -1) return;
+
+      state.coins -= cost;
+      characters[idx].votes += 1;
+      render();
+      showToast(`+1 vote for ${characters[idx].name}`);
+    }
+
+    function openModal(id) {
+      const char = characters.find(c => c.id === id);
+      if (!char) return;
+
+      state.selectedId = id;
+      modalName.textContent = char.name;
+      modalTag.textContent = char.tag;
+      modalVoice.textContent = char.voice;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      state.selectedId = null;
+    }
+
+    function speak(text) {
+      if (!("speechSynthesis" in window)) {
+        showToast("Speech not supported in this browser.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 0.8;
+      utter.volume = 1;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function watchAd() {
+      if (state.adBusy) return;
+      state.adBusy = true;
+      watchAdBtn.disabled = true;
+      watchAdBtn.classList.add("opacity-60", "cursor-not-allowed");
+
+      let seconds = 6;
+      adBar.style.width = "0%";
+      watchAdBtn.textContent = `WATCHING... ${seconds}s`;
+
+      const timer = setInterval(() => {
+        seconds -= 1;
+        const progress = ((6 - seconds) / 6) * 100;
+        adBar.style.width = `${progress}%`;
+
+        if (seconds > 0) {
+          watchAdBtn.textContent = `WATCHING... ${seconds}s`;
+        } else {
+          clearInterval(timer);
+          state.coins += 10;
+          render();
+          showToast("+10 Chaos Coins");
+          state.adBusy = false;
+          watchAdBtn.disabled = false;
+          watchAdBtn.classList.remove("opacity-60", "cursor-not-allowed");
+          watchAdBtn.textContent = "WATCH AD";
+          adBar.style.width = "0%";
+        }
+      }, 1000);
+    }
+
+    gridEl.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const id = Number(btn.dataset.id);
+      const action = btn.dataset.action;
+      if (action === "chat") openModal(id);
+      if (action === "vote") vote(id);
+    });
+
+    watchAdBtn.addEventListener("click", watchAd);
+
+    closeModalBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal-backdrop")) closeModal();
+    });
+
+    speakBtn.addEventListener("click", () => {
+      if (state.selectedId == null) return;
+      const char = characters.find(c => c.id === state.selectedId);
+      if (char) speak(char.voice);
+    });
+
+    voteFromModalBtn.addEventListener("click", () => {
+      if (state.selectedId == null) return;
+      vote(state.selectedId);
+    });
+
+    setInterval(() => {
+      if (state.minutesLeft > 0) {
+        state.minutesLeft -= 1;
+        render();
+      }
+    }, 60000);
+
+    render();
+  </script>
 </body>
 </html>
