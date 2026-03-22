@@ -15,16 +15,7 @@ const characters = [
 ];
 
 function render() {
-  document.getElementById("grid").innerHTML = characters.map(c => `
-    <div onclick="alert('Clicked ' + c.name)" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer border-4 border-lime-400 hover:scale-105">
-      <img src="${c.img}" class="w-full h-48 object-cover">
-      <div class="p-4 text-center">
-        <div class="font-black text-2xl text-orange-400">${c.name}</div>
-        <div class="text-lime-400 text-sm">${c.tag}</div>
-        <div class="text-4xl font-black">${c.votes}</div>
-      </div>
-    </div>
-  `).join('');
+  document.getElementById("grid").innerHTML = characters.map(c => `<div onclick="alert('Clicked ' + c.name)" class="bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer border-4 border-lime-400 hover:scale-105"><img src="\( {c.img}" class="w-full h-48 object-cover"><div class="p-4 text-center"><div class="font-black text-2xl text-orange-400"> \){c.name}</div><div class="text-lime-400 text-sm">\( {c.tag}</div><div class="text-4xl font-black"> \){c.votes}</div></div></div>`).join('');
 }
 
 document.addEventListener("DOMContentLoaded", () => {
