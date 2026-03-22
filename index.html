@@ -5,14 +5,42 @@
 <title>FREAKSHOW ARENA</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-const characters = [
-  {id:1, name:"Donald Trump", tag:"MAKE CHAT GREAT AGAIN", img:"https://picsum.photos/id/64/400/400", votes:12847, voice:"TREMENDOUS! Believe me, this chat is going to be huge!"},
+var characters = [
+  {id:1, name:"Donald Trump", tag:"MAKE CHAT GREAT AGAIN", img:"https://picsum.photos/id/64/400/400", votes:12847, voice:"TREMENDOUS! This chat is going to be huge, believe me!"},
   {id:2, name:"Shrek", tag:"GET OUT OF MY SWAMP", img:"https://picsum.photos/id/201/400/400", votes:8942, voice:"Get out of my swamp!"},
   {id:3, name:"Yoda", tag:"HMM, CHAT YOU MUST", img:"https://picsum.photos/id/29/400/400", votes:6731, voice:"Hmm... strong with this question the force is."},
   {id:4, name:"Karen", tag:"I WANT TO SPEAK TO THE MANAGER", img:"https://picsum.photos/id/160/400/400", votes:5210, voice:"I am THE MANAGER!"},
   {id:5, name:"Borat", tag:"VERY NICE!", img:"https://picsum.photos/id/201/400/400", votes:4123, voice:"Very nice! High five!"},
   {id:6, name:"Vladimir Putin", tag:"IN RUSSIA CHAT CONTROLS YOU", img:"https://picsum.photos/id/160/400/400", votes:3890, voice:"Very interesting..."}
 ];
+
+function speak(text) {
+  var u = new SpeechSynthesisUtterance(text);
+  if (text.includes("TREMENDOUS")) { u.rate = 0.9; u.pitch = 1.1; }
+  speechSynthesis.speak(u);
+}
+
+function openModal(id) {
+  var c = characters.find(function(x) { return x.id === id; });
+  document.getElementById("modal-name").textContent = c.name;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function sendChat() {
+  var input = document.getElementById("chat-input");
+  if (input.value.trim() === "") return;
+  var messages = document.getElementById("messages");
+  messages.innerHTML += "<div class=\"text-right mb-2\"><span class=\"bg-lime-400 text-black px-4 py-2 rounded-2xl inline-block\">" + input.value + "</span></div>";
+  input.value = "";
+  setTimeout(function() {
+    messages.innerHTML += "<div class=\"text-left mb-2\"><span class=\"bg-zinc-800 px-4 py-2 rounded-2xl inline-block\">Very interesting... Tell me more.</span></div>";
+    messages.scrollTop = messages.scrollHeight;
+  }, 800);
+}
 
 function render() {
   var html = "";
@@ -29,38 +57,31 @@ function render() {
   document.getElementById("grid").innerHTML = html;
 }
 
-function speak(text) {
-  var utterance = new SpeechSynthesisUtterance(text);
-  if (text.includes("TREMENDOUS")) { utterance.rate = 0.9; utterance.pitch = 1.1; }
-  speechSynthesis.speak(utterance);
-}
-
-function openModal(id) {
-  var c = characters.find(x => x.id === id);
-  document.getElementById("modal-name").textContent = c.name;
-  document.getElementById("modal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-}
-
 document.addEventListener("DOMContentLoaded", function() {
-  alert("✅ JS WORKS — Long-press card name for voice, tap for chat");
+  alert("✅ Full version loaded — long-press card for voice, tap for chat");
   render();
 });
 </script>
 <style>
 body { background:#000; color:lime; }
 h1 { font-size:50px; color:orange; text-shadow:0 0 20px orange; }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items:center; justify-content:center; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center; z-index:1000; }
 </style>
 </head>
-<body class="p-8 text-center">
+<body class="p-6 text-center">
+<div class="bg-orange-600 text-white text-6xl font-black p-8 rounded-3xl mb-8 border-8 border-yellow-400 glitch">ORANGE DONNY<br>MAKE CHAT GREAT AGAIN</div>
 <h1>FREAKSHOW ARENA</h1>
 <p class="text-3xl mt-4">Coins: <span class="text-yellow-400">150</span></p>
 <div id="grid" class="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-10"></div>
 
 <div id="modal" class="modal">
-  <div class="bg-zinc-900 p-8 rounded-3xl max-w-md text-left">
-    <h2 id="modal-name" class="text-3
+  <div class="bg-zinc-900 p-6 rounded-3xl w-full max-w-md">
+    <h2 id="modal-name" class="text-3xl text-orange-400 mb-4"></h2>
+    <div id="messages" class="h-64 overflow-y-auto mb-4 bg-black p-4 rounded-2xl text-left"></div>
+    <input id="chat-input" type="text" placeholder="Type message..." class="w-full p-4 bg-zinc-800 text-white rounded-2xl mb-4">
+    <button onclick="sendChat()" class="bg-lime-400 text-black px-8 py-3 rounded-xl font-bold w-full">SEND</button>
+    <button onclick="closeModal()" class="mt-4 text-lime-400">Close</button>
+  </div>
+</div>
+</body>
+</html>
